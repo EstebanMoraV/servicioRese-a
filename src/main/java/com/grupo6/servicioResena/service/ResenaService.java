@@ -1,12 +1,13 @@
 package com.grupo6.servicioResena.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.grupo6.servicioResena.model.Evento;
 import com.grupo6.servicioResena.model.Resena;
+import com.grupo6.servicioResena.model.Usuario;
 import com.grupo6.servicioResena.repository.ResenaRepo;
 
 import jakarta.transaction.Transactional;
@@ -22,16 +23,16 @@ public class ResenaService {
         return resenaRepo.findAll();
     }
 
-    public Optional<Resena> findById(Integer id) {
-        return resenaRepo.findById(id);
+    public Resena findById(Integer id) {
+        return resenaRepo.findById(id).orElse(null);
     }
 
-    public Optional<Resena> findByUsuario(Integer usuarioId) {
-        return resenaRepo.findById(usuarioId);
+    public List<Resena> findByUsuario(Usuario usuario) {
+        return resenaRepo.findByUsuario(usuario);
     }
 
-    public Optional<Resena> findByEvento(Integer eventoId) {
-        return resenaRepo.findById(eventoId);
+    public List<Resena> findByEvento(Evento eventoId) {
+        return resenaRepo.findByEvento(eventoId);
     }
 
     public Resena save(Resena resena) {

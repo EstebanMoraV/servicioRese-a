@@ -12,14 +12,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.grupo6.servicioResena.model.Evento;
 import com.grupo6.servicioResena.model.Resena;
+import com.grupo6.servicioResena.model.Usuario;
 import com.grupo6.servicioResena.service.ResenaService;
 
 @RestController
-@RequestMapping("/resenas")
+@RequestMapping("/api/v1/resenas")
 public class ResenaController {
 
     @Autowired
@@ -33,45 +34,56 @@ public class ResenaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Resena> getResenaById(@PathVariable Integer id) {
-        return resenaService.findById(id)
-                .map(resena -> new ResponseEntity<>(resena, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Resena resena = resenaService.findById(id);
+        if (resena != null) {
+            return new ResponseEntity<>(resena, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<Resena> getResenaByUsuario(@PathVariable Integer usuarioId) {
-        return resenaService.findById(usuarioId)
-                .map(usuario -> new ResponseEntity<>(usuario, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public ResponseEntity<List<Resena>> getResenasByUsuario(@PathVariable Integer usuarioId) {
+        List<Resena> resenas = resenaService.findByUsuario(new Usuario(usuarioId, null, null, null, null, null));
+        if (resenas != null && !resenas.isEmpty()) {
+            return new ResponseEntity<>(resenas, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping("/evento/{eventoId}")
-    public ResponseEntity<Resena> getResenaByEvento(@PathVariable Integer eventoId) {
-        return resenaService.findByEvento(eventoId)
-                .map(resena -> new ResponseEntity<>(resena, HttpStatus.OK))
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public ResponseEntity<List<Resena>> getResenasByEvento(@PathVariable Integer eventoId) {
+        List<Resena> resenas = resenaService.findByEvento(new Evento(eventoId, null, null, null, null, null, null, null));
+        if (resenas != null && !resenas.isEmpty()) {
+            return new ResponseEntity<>(resenas, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping
-    public ResponseEntity<Resena> createResena(@RequestParam Resena resena) {
-        Resena savedResena = resenaService.save(resena);
-        return new ResponseEntity<>(savedResena, HttpStatus.CREATED);
+    public ResponseEntity<Resena> createResena(@RequestBody Resena resena) {
+        Resena createdResena = resenaService.save(resena);
+        return new ResponseEntity<>(createdResena, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Resena> updateResena(@PathVariable Integer id, @RequestBody Resena resena) {
-        return resenaService.findById(id)
-                .map(existingResena -> {
-                    resena.setId(id);
-                    Resena updatedResena = resenaService.save(resena);
-                    return new ResponseEntity<>(updatedResena, HttpStatus.OK);
-                })
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        Resena existingResena = resenaService.findById(id);
+        if (existingResena != null) {
+            resena.setId(id); // Ensure the ID is set for the update
+            Resena updatedResena = resenaService.save(resena);
+            return new ResponseEntity<>(updatedResena, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteResena(@PathVariable Integer id) {
-        if (resenaService.findById(id).isPresent()) {
+        Resena existingResena = resenaService.findById(id);
+        if (existingResena != null) {
             resenaService.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
